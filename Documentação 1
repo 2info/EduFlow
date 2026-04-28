@@ -1,0 +1,310 @@
+Documentação Técnica — EduFlow (Orientada a Classes)
+
+Bem-vindo à documentação técnica do EduFlow. Este documento detalha a arquitetura, as principais entidades de domínio, seus relacionamentos e o fluxo geral de uso do sistema.
+
+Índice
+
+Visão Geral da Arquitetura
+
+Principais Entidades (Classes de Domínio)
+
+Relacionamentos Entre Classes
+
+Fluxo de Uso do Sistema
+
+1. Visão Geral da Arquitetura
+
+O sistema EduFlow segue uma arquitetura fortemente modularizada, garantindo separação de responsabilidades em cinco camadas principais:
+
+Camada de Apresentação (Mobile): Interface com o usuário.
+
+Camada de Aplicação (Backend): Lógica de roteamento e controladores.
+
+Camada de Domínio (Regras de negócio): Core do sistema, onde residem as classes aqui documentadas.
+
+Camada de Dados (Banco): Persistência e repositórios.
+
+🤖 Camada de Inteligência (IA): Motor de recomendações, análises e interações adaptativas.
+
+2. Principais Entidades (Classes de Domínio)
+
+👤 User
+
+O que é: Representa qualquer usuário do sistema.
+Para que serve: Gerenciar identidade, perfil e comportamento.
+
+Atributos:
+
+id: string
+name: string
+email: string
+password: string
+role: 'student' | 'teacher' | 'admin'
+createdAt: Date
+
+
+Métodos: updateProfile(), changePassword(), switchRole()
+
+Uso: Base para autenticação, controle de acesso e relacionamento com todo o ecossistema.
+
+StudentProfile
+
+O que é: Extensão do usuário focada especificamente no aluno.
+Para que serve: Armazenar dados comportamentais e educacionais.
+
+Atributos:
+
+userId: string
+interests: string[]
+goals: string[]
+learningStyle: 'visual' | 'practical' | 'theoretical'
+engagementLevel: number
+
+
+Métodos: updateInterests(), updateGoals(), calculateEngagement()
+
+Uso: Alimenta os modelos de IA e personaliza a experiência do usuário.
+
+Career
+
+O que é: Representa uma profissão.
+Para que serve: Base estrutural do simulador de carreiras.
+
+Atributos:
+
+id: string
+name: string
+description: string
+requiredSkills: string[]
+marketTrend: number
+averageSalary: number
+
+
+Métodos: calculateCompatibility(profile: StudentProfile)
+
+Uso: Recomendação de carreira e exploração de mercado dentro do app.
+
+LearningTrail
+
+O que é: Trilha de aprendizado estruturada.
+Para que serve: Guiar a evolução do aluno em um tema específico.
+
+Atributos:
+
+id: string
+area: string
+subarea: string
+level: 'beginner' | 'intermediate' | 'advanced'
+steps: TrailStep[]
+
+
+Métodos: getProgress(userId), unlockNextStep()
+
+Uso: Organização lógica do conteúdo e progressão linear/ramificada do aluno.
+
+TrailStep
+
+O que é: Etapa individual dentro de uma trilha.
+Uso: Unidade mínima de aprendizado.
+
+Atributos:
+
+id: string
+type: 'video' | 'quiz' | 'task' | 'reflection'
+content: string
+xpReward: number
+
+
+Métodos: completeStep()
+
+Quiz &  Question
+
+O que é (Quiz): Questionário adaptativo para avaliação do aluno.
+Uso: Teste de conhecimentos e retroalimentação do motor de IA.
+
+Atributos (Quiz):
+
+id: string
+questions: Question[]
+difficulty: number
+
+
+Atributos (Question):
+
+id: string
+text: string
+options: string[]
+correctAnswer: string
+
+
+Métodos (Quiz): generateAdaptive(userHistory), evaluateAnswers()
+
+UserProgress
+
+O que é: Controle de progresso histórico e pontuação do aluno.
+
+Atributos:
+
+userId: string
+trailId: string
+completedSteps: string[]
+xp: number
+level: number
+
+
+Métodos: addXP(), levelUp()
+
+Notification
+
+O que é: Sistema de notificações inteligentes.
+
+Atributos:
+
+id: string
+userId: string
+type: 'reminder' | 'suggestion' | 'alert'
+message: string
+read: boolean
+
+
+Métodos: send(), markAsRead()
+
+Streak
+
+O que é: Sequência de uso contínuo (mecânica de gamificação).
+
+Atributos:
+
+userId: string
+currentDays: number
+lastAccess: Date
+
+
+Métodos: updateStreak(), resetIfInactive()
+
+AIEngine
+
+O que é: Cérebro do sistema.
+Para que serve: Tomar decisões autônomas e inteligentes.
+Uso: Personalização, automação de fluxos e predições.
+
+Métodos Principais:
+
+recommendCareers(user)
+
+recommendTrails(user)
+
+generateQuiz(user)
+
+generateMentorResponse(input)
+
+predictDropoutRisk(user)
+
+MentorChat
+
+O que é: Interface de chat tutorada por IA.
+
+Atributos:
+
+messages: Message[]
+userId: string
+
+
+Métodos: sendMessage(), receiveResponse()
+
+UserPreferences
+
+O que é: Configurações e preferências do usuário.
+
+Atributos:
+
+theme: string
+notificationFrequency: string
+interests: string[]
+
+
+Métodos: updatePreferences()
+
+Glossary
+
+O que é: Sistema de referência de termos educacionais e técnicos.
+
+Atributos:
+
+term: string
+definition: string
+category: string
+
+
+3. Relacionamentos Entre Classes
+
+Abaixo está o mapa de dependências e composições entre as principais classes do sistema:
+
+classDiagram
+    User "1" *-- "1" StudentProfile : has
+    User "1" *-- "1" UserPreferences : has
+    User "1" *-- "many" UserProgress : tracks
+    User "1" *-- "1" Streak : maintains
+    User "1" *-- "many" Notification : receives
+    
+    StudentProfile --> AIEngine : feeds data
+    
+    LearningTrail "1" *-- "many" TrailStep : contains
+    UserProgress --> LearningTrail : monitors
+    
+    Quiz "1" *-- "many" Question : contains
+    
+    AIEngine ..> Career : recommends
+    AIEngine ..> LearningTrail : recommends
+    AIEngine ..> Quiz : generates
+    AIEngine ..> MentorChat : powers
+
+
+(Lista de relacionamentos diretos):
+
+User → StudentProfile, UserPreferences, UserProgress, Streak, Notification
+
+StudentProfile → AIEngine
+
+LearningTrail → TrailStep
+
+UserProgress → LearningTrail
+
+Quiz → Question
+
+AIEngine → (Career, Trail, Quiz, Mentor)
+
+4. Fluxo de Uso do Sistema
+
+O ciclo de vida padrão de um usuário interligando as classes do sistema ocorre da seguinte maneira:
+
+Cadastro e Configuração:
+
+Usuário cria conta (User é instanciado).
+
+Preenche onboarding.
+
+StudentProfile é criado.
+
+Análise e Recomendação:
+
+AIEngine analisa os dados do perfil.
+
+Sistema recomenda objetos Career e LearningTrail personalizados.
+
+Execução e Progressão:
+
+Usuário executa um TrailStep.
+
+UserProgress é atualizado (ganho de XP/Níveis).
+
+Um Quiz adaptativo é gerado automaticamente para fixação.
+
+Engajamento:
+Uma Notificação é disparada (ex: feedback positivo).
+
+A classe Streak é atualizada mantendo a gamificação ativa.
+
+Uma Notification é disparada (ex: feedback positivo).
+
+A classe Streak é atualizada mantendo a gamificação ativa.
